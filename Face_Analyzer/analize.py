@@ -1,6 +1,6 @@
 from deepface import DeepFace
 import cv2
-from catalog.models import MediaFile
+from app.models import MediaFile
 import os
 from django.conf import settings
 import dlib

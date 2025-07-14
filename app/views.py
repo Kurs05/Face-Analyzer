@@ -48,7 +48,7 @@ def media(request, path):
 
 class mainClass(View):
     def get(self, request):
-        return render(request,'catalog/main_template.html')
+        return render(request,'app/main_template.html')
 def signup_view(request):
     if request.method == 'POST':
         form = SignUpForm(request.POST)
@@ -58,7 +58,7 @@ def signup_view(request):
             return redirect('main')
     else:
         form = SignUpForm()
-    return render(request, 'catalog/registration/signup.html', {'form': form})
+    return render(request, 'app/registration/signup.html', {'form': form})
 
 def login_view(request):
     form = LoginForm(data=request.POST or None)
@@ -70,7 +70,7 @@ def login_view(request):
             if user is not None:
                 login(request, user)
                 return redirect('main')
-    return render(request, 'catalog/registration/login.html', {'form': form})
+    return render(request, 'app/registration/login.html', {'form': form})
 
 class ResetPasswordView(PasswordResetView):
     pass
@@ -136,7 +136,7 @@ def analize_view(request):
 
 class MyResultsListView(LoginRequiredMixin, ListView):
     model = MediaFile
-    template_name = 'catalog/my_results.html'
+    template_name = 'app/my_results.html'
     context_object_name = 'media_files'
 
     def get_queryset(self):
@@ -145,7 +145,7 @@ class MyResultsListView(LoginRequiredMixin, ListView):
 
 class MediaDetailView(LoginRequiredMixin, DetailView):
     model = MediaFile
-    template_name = 'catalog/media_detail.html'
+    template_name = 'app/media_detail.html'
     context_object_name = 'media'
 
     def get_queryset(self):

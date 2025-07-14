@@ -55,7 +55,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'catalog.apps.CatalogConfig',
+    'app.apps.CatalogConfig',
 
 ]
 
@@ -74,7 +74,7 @@ ROOT_URLCONF = 'Face_Analyzer.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'catalog/templates']
+        'DIRS': [BASE_DIR / 'app/templates']
         ,
         'APP_DIRS': True,
         'OPTIONS': {
@@ -102,7 +102,7 @@ DATABASES = {
 }
 
 AUTHENTICATION_BACKENDS = [
-    'catalog.authentication.Backend',  #кастомный бэк
+    'app.authentication.Backend',  #кастомный бэк
 
 ]
 # Password validation
@@ -152,4 +152,4 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-AUTH_USER_MODEL ='catalog.CustomUser'
+AUTH_USER_MODEL ='app.CustomUser'

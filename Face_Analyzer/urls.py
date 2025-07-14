@@ -19,13 +19,13 @@ from django.urls import path
 from django.urls import include
 from django.views.generic import RedirectView
 from django.urls import re_path
-from catalog import views
+from app import views
 from django.conf.urls.static import static
 from django.conf import settings
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('Face Detection app/', include('catalog.urls')),
+    path('Face Detection app/', include('app.urls')),
     path('', RedirectView.as_view(url='/Face Detection app/', permanent=True)),
     re_path(r'^media/<path:path>$', views.media),
 
