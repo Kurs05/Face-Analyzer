@@ -1,0 +1,97 @@
+{% extends 'catalog/base.html' %}
+
+{% block content %}
+{% load static %}
+{% load dict_extras %}
+ <div class="container">
+  <h2>Детали анализа</h2>
+
+  <div class="section">
+    <h3>Файл</h3>
+    <p><strong>Имя:</strong> {{ media.file_name }}</p>
+    <p><strong>Тип:</strong> {{ media.get_file_type_display }}</p>
+    <p><strong>Дата загрузки:</strong> {{ media.uploaded_at|date:"Y-m-d H:i" }}</p>
+
+    {% if media.start_file %}
+      <p><strong>Исходный файл:</strong>
+        <a href="{{ media.start_file.url }}" target="_blank">Открыть</a>
+      </p>
+    {% endif %}
+    {% if media.end_file %}
+      <p><strong>Обработанный файл:</strong>
+        <a href="{{ media.end_file.url }}" target="_blank">Открыть</a>
+      </p>
+    {% endif %}
+    {% if media.landmarks_file %}
+      <p><strong>Файл с разметкой:</strong>
+        <a href="{{ media.landmarks_file.url }}" target="_blank">Открыть</a>
+      </p>
+    {% endif %}
+  </div>
+
+  <div class="section">
+    <h3>Распознанные лица ({{ media.faces.count }})</h3>
+    {% if media.faces.exists %}
+      <table class="face-table">
+        <thead>
+          <tr>
+            <th>Имя</th>
+            <th>Время (если видео)</th>
+            <th>Пол</th>
+            <th>Возраст</th>
+            <th>Топ эмоция</th>
+            <th>Действия</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for face in media.faces.all %}
+            {% with face_data=face.data %}
+              <tr>
+                <td>{{ face.name }}</td>
+                <td>{% if face.timestamp %}{{ face.timestamp }} c{% else %}—{% endif %}</td>
+                <td>{{ face_data.dominant_gender }}</td>
+                <td>{{ face_data.age }}</td>
+                <td>{{ face_data.dominant_emotion }} ({{ face_data.emotion|get_item:face_data.dominant_emotion }}%)</td>
+                <td>
+                  <button class="details-btn" onclick="showDetails({{ face.pk }})">🔍 Details</button>
+                </td>
+              </tr>
+              <tr id="details-{{ face.pk }}" style="display:none;">
+                  <td colspan="6">
+                    <div class="details-columns">
+                      <div class="column">
+                        <h4>Эмоции:</h4>
+                        {% for emotion, val in face_data.emotion.items %}
+                          <div><strong>{{ emotion }}</strong>: {{ val }}%</div>
+                        {% endfor %}
+                      </div>
+
+                      <div class="column">
+                        <h4>Раса:</h4>
+                        <p><strong>Топ:</strong> {{ face_data.dominant_race }}</p>
+                        {% for race, val in face_data.race.items %}
+                          <div><strong>{{ race }}</strong>: {{ val }}%</div>
+                        {% endfor %}
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+
+
+            {% endwith %}
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p>Лица не найдены.</p>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+  function showDetails(id) {
+    const row = document.getElementById('details-' + id);
+    row.style.display = (row.style.display === 'none') ? 'table-row' : 'none';
+  }
+</script>
+{% endblock %}

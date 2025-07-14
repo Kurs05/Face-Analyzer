@@ -1,0 +1,365 @@
+{% extends 'catalog/base.html' %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<div class="main-container">
+    <div class="top-section">
+        <div class="upload-container">
+            <div class="upload-area" id="upload-area">
+              <p id="drag_a_drop">Перетащите файл сюда<br>или нажмите для выбора</p>
+              <input type="file" id="file-input" accept="image/*,video/*" hidden>
+
+              <div class="preview" id="preview">
+                <button class="remove-preview" id='remove_btn' onclick="event.stopPropagation(); removePreview();resetFileInput()">×</button>
+                <img id="img-preview" src="#" alt="" style="display:none;">
+                <video id="video-preview" controls style="display:none;"></video>
+                <div class="filename" id="filename"></div>
+              </div>
+            </div>
+
+            <button class="analyze-btn" id="analyze-btn">
+              🔍 Анализировать лицо
+            </button>
+        </div>
+
+        <div class="card features-card">
+            <h3>Основные возможности</h3>
+            <ul class="features-list">
+                <li><strong>Анализ эмоций</strong><br>Распознавание счастья, грусти, удивления и др.</li>
+                <li><strong>Пол и возраст</strong><br>Определение пола и приблизительного возраста</li>
+                <li><strong>Анализ расы</strong><br>Определение расы такой как indian, white, black и др.<br></li>
+                <li><strong>Ключевые точки лица</strong><br>Детальная разметка черт лица</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="card result-card">
+        <h3>Результаты анализа лица</h3>
+        <div class="result-container" id="results" style="display: none;">
+          <div class="result-header">
+            <div class="face-count" id="faces-count">0</div>
+            <div>Обнаружено лиц</div>
+          </div>
+
+         <div class="data-container">
+              <div class="btn-group-2">
+                <button class="tab-btn active" onclick="showSection('media', this)">
+                  <i class="fas fa-photo-film"></i> Медиа
+                </button>
+                <button class="tab-btn" onclick="showSection('facedata', this)">
+                  <i class="fas fa-user"></i> Данные лица
+                </button>
+                <button class="tab-btn" onclick="showSection('landmarks', this)">
+                  <i class="fas fa-map-marked-alt"></i> Ключевые точки
+                </button>
+              </div>
+
+              <!-- Контейнер: Media -->
+              <div id="section-media" class="section-block">
+                <div class="images">
+                  <div class="image-block">
+                    <div class="image-title">Оригинал</div>
+                    <img id="original-img" src="" alt="Оригинальное изображение">
+                  </div>
+                  <div class="image-block">
+                    <div class="image-title">Обработанный результат</div>
+                    <img id="processed-img" src="" alt="Обработанное изображение">
+                  </div>
+                </div>
+              </div>
+              <!-- Контейнер: FaceData -->
+                <div id="section-facedata" class="section-block" style="display: none;">
+                  <table class="face-table">
+                    <thead>
+                      <tr>
+                        <th>ID лица</th>
+                        <th>Пол</th>
+                        <th>Возраст</th>
+                        <th>Главная эмоция</th>
+                        <th>Действия</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                  </table>
+                </div>
+
+              <!-- Контейнер: Landmarks -->
+              <div id="section-landmarks" class="section-block" style="display: none;">
+                 <div class="image-block">
+                    <div class="image-title">Ключевые точки</div>
+                    <img id="landmark-img" src="" alt="Изображение с точками">
+                  </div>
+              </div>
+                    <!-- Модальное окно -->
+                <div id="face-modal" class="modal" style="display:none;">
+                  <div class="modal-content">
+                    <span class="close-btn">&times;</span>
+                    <div id="modal-details"></div>
+                  </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    const uploadArea = document.getElementById('upload-area');
+    const fileInput = document.getElementById('file-input');
+    const preview = document.getElementById('preview');
+    const imgPreview = document.getElementById('img-preview');
+    const videoPreview = document.getElementById('video-preview');
+    const filenameText = document.getElementById('filename');
+    const analyzeBtn = document.getElementById('analyze-btn');
+    const drgDrp = document.getElementById('drag_a_drop');
+    const removeBtn = document.getElementById('remove_btn');
+
+    // click to open file dialog
+    uploadArea.addEventListener('click', () => fileInput.click());
+
+    // handle dropped file
+    uploadArea.addEventListener('dragover', e => {
+      e.preventDefault();
+      uploadArea.classList.add('dragover');
+    });
+
+    uploadArea.addEventListener('dragleave', () => {
+      uploadArea.classList.remove('dragover');
+    });
+
+    uploadArea.addEventListener('drop', e => {
+      e.preventDefault();
+      uploadArea.classList.remove('dragover');
+      const file = e.dataTransfer.files[0];
+      handleFile(file);
+    });
+
+    fileInput.addEventListener('change', () => {
+      const file = fileInput.files[0];
+      handleFile(file);
+    });
+  function handleFile(file) {
+      if (!file) return;
+
+      const allowedTypes = ['image/', 'video/'];
+      const isAllowed = allowedTypes.some(type => file.type.startsWith(type));
+
+    if (!isAllowed) {
+        alert("Разрешены только изображения и видеофайлы!");
+        resetFileInput();  // Очистим input, чтобы можно было выбрать другой файл
+        return;
+    }
+      // Сброс предыдущего превью
+      removePreview();
+      drgDrp.style.display = 'none';
+      const url = URL.createObjectURL(file);
+      filenameText.textContent = `${file.name} (${(file.size / (1024 * 1024)).toFixed(1)} MB)`;
+
+      if (file.type.startsWith('image')) {
+        imgPreview.src = url;
+        imgPreview.style.display = 'block';
+      } else if (file.type.startsWith('video')) {
+        videoPreview.src = url;
+        videoPreview.style.display = 'block';
+      }
+
+      preview.style.display = 'flex';
+      analyzeBtn.style.display = 'inline-block';
+
+
+  }
+   analyzeBtn.addEventListener('click', async () => {
+        analyzeBtn.textContent = '⏳ Файл в обработке...';
+        analyzeBtn.disabled = true;
+
+        const file = fileInput.files[0];
+        if (!file) {
+            alert("Файл не выбран");
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("file", file);
+        try {
+            removeBtn.style.visibility='hidden';
+            const response = await fetch("{% url 'analize_file' %}", {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": getCSRFToken()
+            },
+            body: formData
+        });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                alert('Ошибка: ' + data.error);
+                removePreview();
+                 removeBtn.style.visibility='visible';
+            } else {
+                alert('Успех: ' + data.message);
+                 setTimeout(() => {
+                removePreview();
+                removeBtn.style.visibility='visible';
+
+                analyzeBtn.textContent = '✅ Анализ завершен!';
+            }, 2000);
+                document.getElementById('processed-img').src = data.end_file_path;
+                document.getElementById('original-img').src = data.start_file_path;
+                document.getElementById('faces-count').innerText = data.count_faces;
+                document.getElementById('results').style.display = 'block';
+                document.getElementById('landmark-img').src = data.file_landmarks;
+                show_table_data(data);
+            }
+        }
+       catch (error) {
+        console.error('Сетевая ошибка:', error);
+
+        // Попробуем вывести дополнительные сведения
+        if (error instanceof SyntaxError) {
+            console.error('Ошибка синтаксиса JSON:', error.message);
+        } else if (error instanceof TypeError) {
+            console.error('Типовая ошибка (например, fetch не удался):', error.message);
+        } else {
+            console.error('Общая ошибка:', error.message);
+        }
+
+
+        if (error.response) {
+            console.error('Ответ сервера:', error.response.status, error.response.statusText);
+            console.error('Данные ответа:', error.response.data);
+        }
+
+    removePreview();
+    removeBtn.style.visibility = 'visible';
+    alert('Произошла ошибка при отправке запроса. Подробнее см. в консоли.');
+}
+
+  });
+
+    function getCSRFToken() {
+        return document.cookie
+            .split(";")
+            .find(cookie => cookie.trim().startsWith("csrftoken="))
+            ?.split("=")[1];
+    }
+    function removePreview() {
+      imgPreview.src = '#';
+      imgPreview.style.display = 'none';
+
+      videoPreview.src = '';
+      videoPreview.load(); // для корректного сброса
+      videoPreview.style.display = 'none';
+
+      filenameText.textContent = '';
+      preview.style.display = 'none';
+      analyzeBtn.style.display = 'none';
+      analyzeBtn.textContent = '📊 Анализировать файл';
+      analyzeBtn.disabled = false;
+      drgDrp.style.display = 'block';
+
+
+    }
+    function resetFileInput() {
+        fileInput.value = '';
+    }
+    function showSection(sectionId, btn) {
+      // Скрыть все секции
+      document.querySelectorAll('.section-block').forEach(section => {
+        section.style.display = 'none';
+      });
+
+      // Показать нужную
+      const target = document.getElementById(`section-${sectionId}`);
+      if (target) target.style.display = 'block';
+
+      // Обновить активную кнопку
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    }
+    function show_table_data(data) {
+    const faceDataContainer = document.getElementById('section-facedata');
+    faceDataContainer.innerHTML = '';
+
+    const table = document.createElement('table');
+    table.className = 'face-table';
+
+    table.innerHTML = `
+      <thead>
+        <tr>
+          <th>ID лица</th>
+          <th>Пол</th>
+          <th>Возраст</th>
+          <th>Преобладающая эмоция</th>
+          <th>Действия</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${data.face_data.map((face, index) => `
+          <tr data-index="${index}">
+            <td>${face.Id}</td>
+            <td>${face.dominant_gender}</td>
+            <td>${face.age}</td>
+            <td><strong>${face.dominant_emotion}</strong> ${face.emotion[face.dominant_emotion]}%</td>
+            <td><button class="details-btn">🔍 Подробнее</button></td>
+          </tr>
+        `).join('')}
+      </tbody>
+    `;
+    faceDataContainer.appendChild(table);
+
+    const buttons = table.querySelectorAll('.details-btn');
+    buttons.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const index = e.target.closest('tr').dataset.index;
+            const face = data.face_data[index];
+            showModalDetails(face);
+        });
+    });
+}
+
+function showModalDetails(face) {
+    const modal = document.getElementById('face-modal');
+    const details = document.getElementById('modal-details');
+
+    const emotionsHTML = Object.entries(face.emotion).map(([emotion, value]) => `
+        <div><strong>${emotion}</strong>: ${value}%</div>
+    `).join('');
+
+    const raceHTML = face.race ? `
+        <h4>Раса:</h4>
+        <p><strong>Преобладающая:</strong> ${face.dominant_race}</p>
+        ${Object.entries(face.race).map(([race, value]) => `
+            <div><strong>${race}</strong>: ${value}%</div>
+        `).join('')}
+    ` : '<p>Нет данных о расе</p>';
+
+    details.innerHTML = `
+        <h3>Анализ лица №${face.Id}</h3>
+        <p><strong>Пол:</strong> ${face.dominant_gender}</p>
+        <p><strong>Возраст:</strong> ${face.age}</p>
+        <p><strong>Преобладающая эмоция:</strong> ${face.dominant_emotion}</p>
+
+        <div style="display: flex; gap: 30px;">
+            <div>
+                <h4>Эмоции:</h4>
+                ${emotionsHTML}
+            </div>
+            <div>
+                ${raceHTML}
+            </div>
+        </div>
+    `;
+
+    modal.style.display = 'flex';
+
+    modal.querySelector('.close-btn').onclick = () => {
+        modal.style.display = 'none';
+    };
+}
+
+  </script>
+
+
+{% endblock %}
+

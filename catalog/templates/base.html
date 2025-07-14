@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="ru">
+{% load static %}
+<head>
+
+    <title>{% block Title %}Face Detection app{% endblock Title %}</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+{#    <link rel="stylesheet" href="{%static 'css/bootstrap.css' %}">#}
+{#   #}
+    <link rel="stylesheet" href="{% static 'css/style.css' %}" type="text/css" media="all">
+
+</head>
+<body>
+{% block sidebar %}
+    <!-- Здесь можно поставить боковую панель, если она используется в базовом шаблоне -->
+{% endblock %}
+
+{% block content %}
+    
+    
+{% endblock content %}
+
+</body>
