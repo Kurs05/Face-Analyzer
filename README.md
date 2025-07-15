@@ -4,7 +4,10 @@
 This project detects human emotions from facial expressions using DeepFace, draws facial landmarks on the image using the dlib library, and stores the results in a local SQLite database. Note that the analysis results may contain inaccuracies, as no AI system is perfect.
 
 
-https://github.com/user-attachments/assets/2919152d-9aa0-41a1-9f6e-83fadd4d5b73
+
+
+https://github.com/user-attachments/assets/371c5e94-55b6-47eb-9a22-b14b03802cad
+
 
 
 
