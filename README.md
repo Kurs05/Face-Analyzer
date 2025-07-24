@@ -46,13 +46,13 @@ py manage.py runserver
 
 ## Screenshots
 
-<img width="1826" height="924" alt="image_2025-07-14_18-09-42" src="https://github.com/user-attachments/assets/26a242e1-d25e-4fdf-a057-32a237ab7e9c" />
+<img width="600" height="700" alt="image_2025-07-14_18-09-42" src="https://github.com/user-attachments/assets/26a242e1-d25e-4fdf-a057-32a237ab7e9c" />
 
-<img width="1855" height="918" alt="image_2025-07-14_18-10-56" src="https://github.com/user-attachments/assets/0426d488-66e9-4d6c-a8f5-1fa302703a1b" />
+<img width="600" height="700" alt="image_2025-07-14_18-10-56" src="https://github.com/user-attachments/assets/0426d488-66e9-4d6c-a8f5-1fa302703a1b" />
 
-<img width="1489" height="793" alt="image_2025-07-14_18-11-06" src="https://github.com/user-attachments/assets/459fca0f-deff-4a8d-9887-75416737268a" />
+<img width="600" height="700" alt="image_2025-07-14_18-11-06" src="https://github.com/user-attachments/assets/459fca0f-deff-4a8d-9887-75416737268a" />
 
-<img width="1820" height="922" alt="image_2025-07-14_18-11-13" src="https://github.com/user-attachments/assets/25716754-8c2c-4b6b-8057-e621fe2d37fc" />
+<img width="600" height="700" alt="image_2025-07-14_18-11-13" src="https://github.com/user-attachments/assets/25716754-8c2c-4b6b-8057-e621fe2d37fc" />
 
 
 Feel free to fork, modify, and submit a pull request. Happy coding!
